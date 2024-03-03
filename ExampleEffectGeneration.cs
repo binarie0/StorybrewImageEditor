@@ -22,45 +22,32 @@ namespace StorybrewScripts
             //this effect shows how to use StorybrewImageEditor
 
 		    layer = GetLayer("ExampleEffectGeneration");
-
-            //set sprite path
+            
+            
             string SpritePath = Beatmap.BackgroundPath;
             #region EditedOsbSprite Showcase
-            //need to set mapset path
-            ImageEditor.MapsetPath = MapsetPath;
-
-            EditedOsbSprite sprite = EditedOsbSprite.NewSprite(SpritePath);
             
-            //to blur a sprite, just call this method
-            sprite.Blur(10); //10 = strength in pixels (this is with gaussian blur)
+            //to generate a blurred sprite, just use the following function
+            OsbSprite sprite = layer.CreateBlurSprite(Beatmap.BackgroundPath, OsbOrigin.Centre, 10);
+            sprite.Fade(1000, 2000, 1, 0);
+        
+            //to generate a grayscaled sprite, use this
+            OsbSprite sprite2 = layer.CreateGraySprite(Beatmap.BackgroundPath, OsbOrigin.Centre, 0.3f, 0.4f, 0.6f);
+            sprite2.Fade(4000, 5000, 1, 0);
 
-            //to make a sprite black and white, just call this method
-            sprite.Grayscale(0.2f, 0.2f, 0.2f); //strength of red, green, blue
-
-            //and yes, these can be run concurrently!
-            
-            //to finalize the sprite generation, just call this method
-            sprite.Export(); // or sprite.Export(EditedOsbSprite.JpegEncoder); | sprite.Export(EditedOsbSprite.PngEncoder);
-
-            //to reference the sprite, just reference its variables in a CreateSprite function
-            OsbSprite spr = layer.CreateSprite(sprite.Path, OsbOrigin.Centre);
-
-            //if you need to scale it down, sprite also stores the objects native width and height
-            spr.Scale(0, 1000, 1, 854.0d/sprite.Width); // or spr.Scale(0, 1000, 1, 480.0d/sprite.Height);
-            
-            //all sprites generated have their own *unique-ish???* hash codes so that they don't get generated over and over with each update (unless values change)
+            //to generate a blurred and grayscaled sprite, use this
+            OsbSprite sprite3 = layer.CreateBlurPlusGraySprite(Beatmap.BackgroundPath, OsbOrigin.Centre, 30, 0.2f);
+            sprite3.Fade(5000, 6000, 1, 0);
             #endregion
             #region NoiseGeneration Showcase
-            //to generate noise, all you need to do is just call the constructor of the class
-            NoiseGeneration noise = new NoiseGeneration(this.RandomSeed, 4, NoiseGeneration.NoiseType.Grayscale); //seed, count, noise type
-            //you can also generate noise in full color
-            NoiseGeneration noise2 = new NoiseGeneration(this.RandomSeed, 4, NoiseGeneration.NoiseType.FullColor);
 
-            //all noise created will be stored inside of "sb/noise" and be separated by noise type and seed such that generations are fully unique and not overlapping
-            
-            //to reference the generated noise, just reference its variables in a CreateAnimation function
-            OsbAnimation anim = layer.CreateAnimation(noise.Path, noise.Count, 100, OsbLoopType.LoopForever);
+            //to generate noise, all you need to do is use this
+            OsbAnimation animation = layer.CreateNoise(6, Beatmap.GetTimingPointAt(0).BeatDuration * 0.25d);
+            animation.Fade(8000, 9000, 1, 0);
             #endregion
+
+            
+            
         }
     }
 }

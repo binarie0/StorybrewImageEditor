@@ -45,8 +45,9 @@ namespace StorybrewImageEditor
         /// Old Sprite Path. 
         /// </summary>
         private string OldPath;
-        private int OldPath_Hash;
-        
+        private string OldPath_FileName;
+        private string OldPath_FileExtension;
+
         private string FullyQualifiedOldPath;
         private string FullyQualifiedNewPath;
 
@@ -68,20 +69,30 @@ namespace StorybrewImageEditor
         public static EditedOsbSprite NewSprite(string OldPath)
             =>
             //checks if file exists. if it does, make new instance
-            File.Exists((ImageEditor.MapsetPath + "\\" + OldPath).Replace("/", "\\")) ? 
+            File.Exists((ImageEditor.MapsetPath + "\\" + OldPath).Replace("/", "\\")) ?
                 new EditedOsbSprite(OldPath) : null;
         // private StoryboardObjectGenerator Generator; //specifically for debug
         private EditedOsbSprite(string OldPath)
         {
             this.OldPath = OldPath;
 
-            this.OldPath_Hash = OldPath.GetHashCode();
+            InitializePathSubstrings();
 
             this.FullyQualifiedOldPath = ImageEditor.MapsetPath + "/" + OldPath;
             //this.FullyQualifiedNewPath = MapsetFolder + "/" + NewPath;
             this.Bitmap = new Bitmap(Image.FromFile(FullyQualifiedOldPath));
 
             this.Width = this.Bitmap.Width; this.Height = this.Bitmap.Height;
+        }
+        private void InitializePathSubstrings()
+        {
+            string[] strs = OldPath.Split('/');
+            string[] strs2 = strs[strs.Length - 1].Split('.');
+
+
+            OldPath_FileName = strs2[0];
+            OldPath_FileExtension = "." + strs2[1];
+
         }
         /// <summary>
         /// Blurs the image.
@@ -103,7 +114,7 @@ namespace StorybrewImageEditor
         /// <param name="b">Strength (between 0 and 1) of the blues.</param>
         public void Grayscale(float r = 0.5f, float g = 0.5f, float b = 0.5f)
         {
-           //set mins and maxes
+            //set mins and maxes
             if (r < 0) r = 0; if (r > 1) r = 1;
             if (g < 0) g = 0; if (g > 1) g = 1;
             if (b < 0) b = 0; if (b > 1) b = 1;
@@ -113,7 +124,7 @@ namespace StorybrewImageEditor
             this.BlackAndWhiteCommand_Hash = (int)(r*g*17000 + b*b*288);
             //create unique id
         }
-        
+
         public static ImageCodecInfo JpegEncoder => codecList[1]; //used test generation to find these numbers
         public static ImageCodecInfo PngEncoder => codecList[codecList.Length - 1]; //used test generation to find these numbers
         private string GeneratePath()
@@ -121,61 +132,28 @@ namespace StorybrewImageEditor
             //precondition -- if both null then it's still the original image
             if (BlurCommand == null && BlackAndWhiteCommand == null) { Path = OldPath; return null; }
 
-            //
-            int blurindex = 0, bwindex = 0, oldindex = 0;
-            int bluriteration, bwiteration, olditeration;
 
-            //initialize arrays
-            char[] truncate = new char[8]; //max 8 characters
-            char[] oldtruncate = new char[4]; //max 4 characters for old path hash
-            
             //convert everything to a string
-            string blurhash_tostring = BlurCommand != null ? BlurCommand_Hash.ToString() : "";
-            string bwhash_tostring = BlackAndWhiteCommand != null ? BlackAndWhiteCommand_Hash.ToString() : "";
-            string oldhash_tostring = OldPath_Hash.ToString();
-            string aPath;
-            
 
-            //truncate following hashes into 8 characters as that makes it way easier to check against
-            char[] blurhash = blurhash_tostring.ToCharArray();
-            char[] bwhash = bwhash_tostring.ToCharArray();
-            char[] oldhash = oldhash_tostring.ToCharArray();
-            //logic works like this
-            //sets max iteration to 4
-            bluriteration = (blurhash.Length <= 4? blurhash.Length:4);
-            bwiteration = (bwhash.Length <= 4 ? bwhash.Length : 4);
-            olditeration = (oldhash.Length  <= 4 ? oldhash.Length : 4);
+            string aPath = "sb/" + OldPath_FileName + "_" +
+                            (BlurCommand == null ?
+                                "[]" :
+                                "[" + BlurCommand.GetStrength().ToString() + "]") +
+                            (BlackAndWhiteCommand == null ?
+                                "[]" :
+                                "[" + BlackAndWhiteCommand.GetColorString() + "]");
+                            
 
-            if (blurhash.Length == 0) bluriteration = 0;
-            if (bwhash.Length == 0) bwiteration = 0;
-            //truncate filepath
-            for (blurindex = 0; blurindex < bluriteration; blurindex++)
-            {
-                truncate[blurindex] = blurhash[blurindex];
-            }
-
-            for (bwindex = 0; bwindex < bwiteration; bwindex++)
-            {
-                truncate[blurindex + bwindex] = bwhash[bwindex];
-            }
-            for (oldindex = 0; oldindex < olditeration; oldindex++)
-            {
-                oldtruncate[oldindex] = oldhash[oldindex];
-            }
-
-
-            aPath = "sb/" + new string(oldtruncate) + "_" + new string(truncate).Replace("\0", String.Empty);
-            
             return aPath;
         }
-        
+
         private bool ExistenceOfGeneration()
         {
             //set fully qualified path name
             FullyQualifiedNewPath = ImageEditor.MapsetPath + "/" + Path;
             //Generator.Log(FullyQualifiedNewPath);
             return (File.Exists(FullyQualifiedNewPath));
-            
+
         }
         public void Export(ImageCodecInfo codec = null)
         {
@@ -191,8 +169,8 @@ namespace StorybrewImageEditor
             if (newPath == null) { return; }
             //if a file already exists with that exact code, then it's already been generated.
 
-            
-            
+
+
             //WORKS
             #region Default Encoding Exports
 
@@ -214,7 +192,7 @@ namespace StorybrewImageEditor
             //set new bitmap
             Bitmap newbitmap = new Bitmap(this.Bitmap.Width, this.Bitmap.Height),
                 transfer;
-            
+
             //graphics object can be used twice 
             Graphics graphics = null;
             bool flag = false;
@@ -223,7 +201,7 @@ namespace StorybrewImageEditor
             ColorMatrix matrix;
             float[][] colors;
             ImageAttributes attributes;
-            float r, g, b, a=1, w=1;
+            float r, g, b, a = 1, w = 1;
             if (BlackAndWhiteCommand != null)
             {
                 flag = true;
@@ -270,13 +248,13 @@ namespace StorybrewImageEditor
                 gblur = new GaussianBlur(flag ? transfer : this.Bitmap);
                 //set new bitmap equal to the output
                 newbitmap = gblur.Process(BlurCommand.GetStrength());
-                
+
                 //honestly can't believe it's that easy
 
             }
-            
-            
-            
+
+
+
             /* DEBUG : Invalid Characters In Path Name
             
             string prefix = "Position: ", midfix = " Character: ", postfix = " Short Value: ";
@@ -311,8 +289,8 @@ namespace StorybrewImageEditor
             */
             newbitmap.Save(System.IO.Path.Combine(ImageEditor.MapsetPath, Path).Replace('/', '\\')
                             , codec, null);
-            
-             
+
+
             //graphics.Dispose(); apparently it's already disposed??
             return;
 
@@ -339,6 +317,10 @@ namespace StorybrewImageEditor
             Red=red;
             Blue=blue;
             Green=green;
+        }
+        internal string GetColorString()
+        {
+            return (Red.ToString() + "~" + Green.ToString() + "~" + Blue.ToString());
         }
         internal float GetRed() => Red;
         internal float GetGreen() => Green;
@@ -540,11 +522,11 @@ namespace StorybrewImageEditor
         /// Number of frames.
         /// </summary>
         public int Count => count;
-        
+
         public void GenerateNoise()
         {
 
-            for (int i =0; i < count; i++)
+            for (int i = 0; i < count; i++)
             {
 
                 GenerateNoiseFrame(i);
@@ -656,8 +638,8 @@ namespace StorybrewImageEditor
         /// <summary>
         /// Mapset Path from which all reference images / generated images should stem from.
         /// </summary>
-        public static String MapsetPath;
-        
+        public static String MapsetPath = StoryboardObjectGenerator.Current.MapsetPath;
+
     }
 
-} 
+}
