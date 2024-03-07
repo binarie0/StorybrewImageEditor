@@ -45,6 +45,7 @@ namespace StorybrewScripts
             OsbAnimation animation = layer.CreateNoise(6, Beatmap.GetTimingPointAt(0).BeatDuration * 0.25d);
             animation.Fade(8000, 9000, 1, 0);
             #endregion
+
             #region Sprite Fragmentation and Grouping
 
             //to create a sprite fragment array, use this
