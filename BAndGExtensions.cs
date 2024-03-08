@@ -7,118 +7,50 @@ namespace StorybrewImageLib
     public static class BAndGExtensions
     {
         private static Vector2 CENTER = new Vector2(320, 240);
-        #region Blur
-        public static OsbSprite CreateBlurSprite(this StoryboardLayer layer,
-                                        string path, 
-                                        OsbOrigin origin, 
-                                        Vector2 position, 
-                                        int strength)
-        {
-            EditedOsbSprite spr = EditedOsbSprite.NewSprite(path);
-            spr.Blur(strength);
-            spr.Export();
-
-            return (layer.CreateSprite(spr.Path, origin, position));
-        }
-        public static OsbSprite CreateBlurSprite(this StoryboardLayer layer,
-                                        string path,
-                                        OsbOrigin origin,
-                                        int strength)
-        {
-            return layer.CreateBlurSprite(path, origin, CENTER, strength);
-        }
-        public static OsbSprite CreateBlurSprite(this StoryboardLayer layer,
-                                        string path,
-                                        int strength)
-        {
-            return layer.CreateBlurSprite(path, OsbOrigin.Centre, CENTER, strength);
-        }
-        #endregion
-        #region Grayscale
-        public static OsbSprite CreateGraySprite(this StoryboardLayer layer,
-                                        string path,
-                                        OsbOrigin origin,
+        public static OsbSprite GenerateSprite(this StoryboardLayer Layer,
+                                        string Base_Path,
+                                        OsbOrigin Origin,
                                         Vector2 position,
-                                        float r, float g, float b
-                                        )
+                                        BlurEffect Blur = null,
+                                        GrayscaleEffect Grayscale = null,
+                                        bool Inverse = false)
         {
-            EditedOsbSprite spr = EditedOsbSprite.NewSprite(path);
-            spr.Grayscale(r, g, b);
+            EditedOsbSprite spr = EditedOsbSprite.NewSprite(Base_Path, Blur, Grayscale, Inverse);
             spr.Export();
 
-            return (layer.CreateSprite(spr.Path, origin, position));
+
+            return (Layer.CreateSprite(spr.Path, Origin, position));
 
         }
-        public static OsbSprite CreateGraySprite(this StoryboardLayer layer,
-                                        string path,
-                                        OsbOrigin origin,
-                                        float r, float g, float b
-                                        )
+        public static OsbSprite GenerateSprite(this StoryboardLayer Layer,
+                                        string Base_Path,
+                                        OsbOrigin Origin,
+                                        
+                                        BlurEffect Blur = null,
+                                        GrayscaleEffect Grayscale = null,
+                                        bool Inverse = false)
         {
-            return layer.CreateGraySprite(path, origin, CENTER, r, g, b);
-        }
-        public static OsbSprite CreateGraySprite(this StoryboardLayer layer,
-                                        string path,
-                                        float r, float g, float b
-                                        )
-        {
-            return layer.CreateGraySprite(path, OsbOrigin.Centre, CENTER, r, g, b);
-        }
-        public static OsbSprite CreateGraySprite(this StoryboardLayer layer,
-                                        string path,
-                                        OsbOrigin origin,
-                                        float colorshift
-                                        )
-        {
-            return layer.CreateGraySprite(path, OsbOrigin.Centre, CENTER, colorshift, colorshift, colorshift);
-        }
-        #endregion
-        #region Blur + Grayscale
-        public static OsbSprite CreateBlurPlusGraySprite(this StoryboardLayer layer,
-                                        string path,
-                                        OsbOrigin origin,
-                                        Vector2 position,
-                                        int strength,
-                                        float r, float g, float b)
-        {
-            EditedOsbSprite spr = EditedOsbSprite.NewSprite(path);
-            spr.Blur(strength);
-            spr.Grayscale(r, g, b);
+            EditedOsbSprite spr = EditedOsbSprite.NewSprite(Base_Path, Blur, Grayscale, Inverse);
             spr.Export();
 
-            return (layer.CreateSprite(spr.Path, origin, position));
-        }
-        public static OsbSprite CreateBlurPlusGraySprite(this StoryboardLayer layer,
-                                        string path,
-                                        OsbOrigin origin,
 
-                                        int strength,
-                                        float r, float g, float b)
+            return (Layer.CreateSprite(spr.Path, Origin, CENTER));
+
+        }
+        public static OsbSprite GenerateSprite(this StoryboardLayer Layer,
+                                        string Base_Path,
+                                        
+                                        BlurEffect Blur = null,
+                                        GrayscaleEffect Grayscale = null,
+                                        bool Inverse = false)
         {
-            return (layer.CreateBlurPlusGraySprite(path, origin, CENTER, strength, r, g, b));
+            EditedOsbSprite spr = EditedOsbSprite.NewSprite(Base_Path, Blur, Grayscale, Inverse);
+            spr.Export();
+
+
+            return (Layer.CreateSprite(spr.Path, OsbOrigin.Centre, CENTER));
+
         }
-        public static OsbSprite CreateBlurPlusGraySprite(this StoryboardLayer layer,
-                                        string path,
-
-
-                                        int strength,
-                                        float r, float g, float b)
-        {
-            return (layer.CreateBlurPlusGraySprite(path, OsbOrigin.Centre, CENTER, strength, r, g, b));
-        }
-        public static OsbSprite CreateBlurPlusGraySprite(this StoryboardLayer layer,
-                                        string path,
-                                        OsbOrigin origin,
-
-                                        int strength,
-                                        float colorshift)
-        {
-            return (layer.CreateBlurPlusGraySprite(path, OsbOrigin.Centre, CENTER, strength, 
-                                        colorshift, colorshift, colorshift));
-        }
-
-        #endregion
-
 
         #region Noise
         public static OsbAnimation CreateNoise(this StoryboardLayer layer,

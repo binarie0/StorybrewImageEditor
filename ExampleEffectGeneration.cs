@@ -27,17 +27,13 @@ namespace StorybrewScripts
             string SpritePath = Beatmap.BackgroundPath;
             #region EditedOsbSprite Showcase
             
-            //to generate a blurred sprite, just use the following function
-            OsbSprite sprite = layer.CreateBlurSprite(Beatmap.BackgroundPath, OsbOrigin.Centre, 10);
+            OsbSprite sprite = layer.GenerateSprite(Beatmap.BackgroundPath, OsbOrigin.Centre, //can also add a position here
+                                null, //Blur Effect
+                                null, //grayscale
+                                true  //inversed
+                                );
+            
             sprite.Fade(1000, 2000, 1, 0);
-        
-            //to generate a grayscaled sprite, use this
-            OsbSprite sprite2 = layer.CreateGraySprite(Beatmap.BackgroundPath, OsbOrigin.Centre, 0.3f, 0.4f, 0.6f);
-            sprite2.Fade(4000, 5000, 1, 0);
-
-            //to generate a blurred and grayscaled sprite, use this
-            OsbSprite sprite3 = layer.CreateBlurPlusGraySprite(Beatmap.BackgroundPath, OsbOrigin.Centre, 30, 0.2f);
-            sprite3.Fade(5000, 6000, 1, 0);
             #endregion
             #region NoiseGeneration Showcase
 
@@ -45,7 +41,6 @@ namespace StorybrewScripts
             OsbAnimation animation = layer.CreateNoise(6, Beatmap.GetTimingPointAt(0).BeatDuration * 0.25d);
             animation.Fade(8000, 9000, 1, 0);
             #endregion
-
             #region Sprite Fragmentation and Grouping
 
             //to create a sprite fragment array, use this

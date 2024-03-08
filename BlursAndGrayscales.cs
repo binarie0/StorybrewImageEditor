@@ -44,10 +44,9 @@ namespace StorybrewImageLib
         #endregion
         #region Sprite Commands
 
-        private BlurCommand BlurCommand = null;
-        private int BlurCommand_Hash;
-        private BlackAndWhiteCommand BlackAndWhiteCommand = null;
-        private int BlackAndWhiteCommand_Hash;
+        private BlurEffect BlurEffect = null;
+        private GrayscaleEffect GrayscaleEffect = null;
+        private bool Inverse = false;
 
         #endregion
 
@@ -57,6 +56,11 @@ namespace StorybrewImageLib
             //checks if file exists. if it does, make new instance
             File.Exists((ImageEditor.MapsetPath + "\\" + OldPath).Replace("/", "\\")) ?
                 new EditedOsbSprite(OldPath) : null;
+        public static EditedOsbSprite NewSprite(string OldPath, BlurEffect blur, GrayscaleEffect grayscale, bool inverse)
+            =>
+            //checks if file exists. if it does, make new instance
+            File.Exists((ImageEditor.MapsetPath + "\\" + OldPath).Replace("/", "\\")) ?
+                new EditedOsbSprite(OldPath, blur, grayscale, inverse) : null;
         // private StoryboardObjectGenerator Generator; //specifically for debug
         private EditedOsbSprite(string OldPath)
         {
@@ -69,6 +73,24 @@ namespace StorybrewImageLib
             this.Bitmap = new Bitmap(Image.FromFile(FullyQualifiedOldPath));
 
             this.Width = this.Bitmap.Width; this.Height = this.Bitmap.Height;
+
+            
+        }
+        private EditedOsbSprite(string OldPath, BlurEffect blur, GrayscaleEffect grayscale, bool inverse)
+        {
+            this.OldPath = OldPath;
+
+            InitializePathSubstrings();
+
+            this.FullyQualifiedOldPath = ImageEditor.MapsetPath + "/" + OldPath;
+            //this.FullyQualifiedNewPath = MapsetFolder + "/" + NewPath;
+            this.Bitmap = new Bitmap(Image.FromFile(FullyQualifiedOldPath));
+
+            this.Width = this.Bitmap.Width; this.Height = this.Bitmap.Height;
+
+            this.BlurEffect = blur;
+            this.GrayscaleEffect = grayscale;
+            this.Inverse = inverse;
         }
         private void InitializePathSubstrings()
         {
@@ -89,8 +111,8 @@ namespace StorybrewImageLib
             //set mins
             if (strength < 0) return;
             //set blur command
-            this.BlurCommand = new BlurCommand(strength);
-            this.BlurCommand_Hash = strength;
+            this.BlurEffect = new BlurEffect(strength);
+            
         }
         /// <summary>
         /// Turns the image black and white.
@@ -105,9 +127,9 @@ namespace StorybrewImageLib
             if (g < 0) g = 0; if (g > 1) g = 1;
             if (b < 0) b = 0; if (b > 1) b = 1;
             //set command
-            this.BlackAndWhiteCommand = new BlackAndWhiteCommand(r, g, b);
-            //17000 and 288 are just random numbers it doesn't really matter
-            this.BlackAndWhiteCommand_Hash = (int)(r*g*17000 + b*b*288);
+            this.GrayscaleEffect = new GrayscaleEffect(r, g, b);
+            
+            
             //create unique id
         }
 
@@ -116,18 +138,19 @@ namespace StorybrewImageLib
         private string GeneratePath()
         {
             //precondition -- if both null then it's still the original image
-            if (BlurCommand == null && BlackAndWhiteCommand == null) { Path = OldPath; return null; }
+            if (BlurEffect == null && GrayscaleEffect == null && !Inverse) { Path = OldPath; return null; }
 
 
             //convert everything to a string
 
             string aPath = "sb/" + OldPath_FileName + "_" +
-                            (BlurCommand == null ?
+                            (BlurEffect == null ?
                                 "[]" :
-                                "[" + BlurCommand.GetStrength().ToString() + "]") +
-                            (BlackAndWhiteCommand == null ?
+                                "[" + BlurEffect.Strength.ToString() + "]") +
+                            (GrayscaleEffect == null ?
                                 "[]" :
-                                "[" + BlackAndWhiteCommand.GetColorString() + "]");
+                                "[" + GrayscaleEffect.GetColorString() + "]") + 
+                            (Inverse ? "_Inversed" : "");
                             
 
             return aPath;
@@ -141,7 +164,9 @@ namespace StorybrewImageLib
             return (File.Exists(FullyQualifiedNewPath));
 
         }
-        public void Export(ImageCodecInfo codec = null)
+        
+        
+            public void Export(ImageCodecInfo codec = null)
         {
 
             //WORKS
@@ -155,14 +180,14 @@ namespace StorybrewImageLib
             if (newPath == null) { return; }
             //if a file already exists with that exact code, then it's already been generated.
 
-
+            InverseEffect inv;
 
             //WORKS
             #region Default Encoding Exports
 
             if (codec == null)
             {
-                codec = PngEncoder;
+                codec = OldPath_FileExtension == ".png" ? PngEncoder : JpegEncoder;
             }
             #endregion
             #region Check For Existence
@@ -177,7 +202,7 @@ namespace StorybrewImageLib
             #endregion
             //set new bitmap
             Bitmap newbitmap = new Bitmap(this.Bitmap.Width, this.Bitmap.Height),
-                transfer;
+                transfer, invtransfer;
 
             //graphics object can be used twice 
             Graphics graphics = null;
@@ -188,13 +213,13 @@ namespace StorybrewImageLib
             float[][] colors;
             ImageAttributes attributes;
             float r, g, b, a = 1, w = 1;
-            if (BlackAndWhiteCommand != null)
+            if (GrayscaleEffect != null)
             {
                 flag = true;
                 //just so i don't need to reference it constantly
-                r = BlackAndWhiteCommand.GetRed();
-                g = BlackAndWhiteCommand.GetGreen();
-                b = BlackAndWhiteCommand.GetBlue();
+                r = GrayscaleEffect.Red;
+                g = GrayscaleEffect.Green;
+                b = GrayscaleEffect.Blue;
 
                 //get graphics object
                 graphics = Graphics.FromImage(newbitmap);
@@ -225,7 +250,7 @@ namespace StorybrewImageLib
                          GraphicsUnit.Pixel, attributes); //attributes of graphics
 
             }
-            if (BlurCommand != null)
+            if (BlurEffect != null)
             {
                 //saves memory since we dont want 2 bitmaps if we dont need it
                 //couldve used marshal.copy but it just makes more sense this way
@@ -233,46 +258,24 @@ namespace StorybrewImageLib
                 //set gaussianblur instance
                 gblur = new GaussianBlur(flag ? transfer : this.Bitmap);
                 //set new bitmap equal to the output
-                newbitmap = gblur.Process(BlurCommand.GetStrength());
+                newbitmap = gblur.Process(BlurEffect.Strength);
 
                 //honestly can't believe it's that easy
 
             }
-
-
-
-            /* DEBUG : Invalid Characters In Path Name
-            
-            string prefix = "Position: ", midfix = " Character: ", postfix = " Short Value: ";
-            char[] backtochar = FullyQualifiedNewPath.ToCharArray();
-
-            //set directory character to lowercase?
-            backtochar[0] = ToLower(backtochar[0]);
-
-            char[] invalid_filename = System.IO.Path.GetInvalidFileNameChars();
-            for (int i = 0; i < backtochar.Length; i++)
+            if (Inverse)
             {
-                for (int t = 0; t < invalid_filename.Length; t++)
-                {
-                    if (backtochar[i] == invalid_filename[t])
-                    {
-                        Generator.Log(prefix + i.ToString() + midfix + backtochar[i] + postfix + (short)(backtochar[i]));
-                        if (backtochar[i] == '/') backtochar[i] = '\\';
-                        
-                    }
-                }
+                invtransfer = (BlurEffect == null && GrayscaleEffect == null) ? this.Bitmap : newbitmap;
+
+                inv = new InverseEffect(invtransfer);
+
+                newbitmap = inv.Process();
+
+
             }
 
-            string test2 = backtochar.ToString();
-            Generator.Log(test2);
-            //this doesn't return anything
-            string test = System.IO.Path.Combine(MapsetFolder, Path).Replace('/', '\\');
-            Generator.Log("System.IO.Path.Combine + Replace returns " + test);
-            //DEBUG:
-            //see if fully qualified new path has invalid characters
-            Generator.Log(@FullyQualifiedNewPath.Replace('/', '\\'));
 
-            */
+
             newbitmap.Save(System.IO.Path.Combine(ImageEditor.MapsetPath, Path).Replace('/', '\\')
                             , codec, null);
 
@@ -284,21 +287,21 @@ namespace StorybrewImageLib
 
 
     }
-    internal class BlurCommand
+    public class BlurEffect
     {
-        private int strength;
-        internal BlurCommand(int strength)
+        public int Strength { get; set; }
+        public BlurEffect(int Strength)
         {
-            this.strength = strength;
+            this.Strength = Strength;
         }
-        internal int GetStrength() => strength;
+    
     }
-    internal class BlackAndWhiteCommand
+    public class GrayscaleEffect
     {
-        private float Red;
-        private float Blue;
-        private float Green;
-        internal BlackAndWhiteCommand(float red, float blue, float green)
+        public float Red;
+        public float Blue;
+        public float Green;
+        public GrayscaleEffect(float red, float blue, float green)
         {
             Red=red;
             Blue=blue;
@@ -308,9 +311,7 @@ namespace StorybrewImageLib
         {
             return (Red.ToString() + "~" + Green.ToString() + "~" + Blue.ToString());
         }
-        internal float GetRed() => Red;
-        internal float GetGreen() => Green;
-        internal float GetBlue() => Blue;
+        
     }
     /// <summary>
     /// Provides support for Gaussian Blur, written by mdymel and Gisburne2000 on github.<br/>
@@ -486,6 +487,88 @@ namespace StorybrewImageLib
                     ti += w;
                 }
             });
+        }
+    }
+    internal class InverseEffect
+    {
+        private readonly int[] _alpha;
+        private readonly int[] _red;
+        private readonly int[] _green;
+        private readonly int[] _blue;
+
+        private readonly int _width;
+        private readonly int _height;
+
+        private readonly ParallelOptions _pOptions = new ParallelOptions { MaxDegreeOfParallelism = 16 };
+
+        internal InverseEffect(Bitmap image)
+        {
+            var rct = new Rectangle(0, 0, image.Width, image.Height);
+            var source = new int[rct.Width * rct.Height];
+            var bits = image.LockBits(rct, ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            Marshal.Copy(bits.Scan0, source, 0, source.Length);
+            image.UnlockBits(bits);
+
+            _width = image.Width;
+            _height = image.Height;
+
+            _alpha = new int[_width * _height];
+            _red = new int[_width * _height];
+            _green = new int[_width * _height];
+            _blue = new int[_width * _height];
+
+            Parallel.For(0, source.Length, _pOptions, i =>
+            {
+                _alpha[i] = (int)((source[i] & 0xff000000) >> 24);
+                _red[i] = (source[i] & 0xff0000) >> 16;
+                _green[i] = (source[i] & 0x00ff00) >> 8;
+                _blue[i] = (source[i] & 0x0000ff);
+            });
+
+        }
+        internal Bitmap Process()
+        {
+            
+            var newRed = new int[_width * _height];
+            var newGreen = new int[_width * _height];
+            var newBlue = new int[_width * _height];
+            var dest = new int[_width * _height];
+
+            Parallel.Invoke(
+                //() => Invert(_alpha, newAlpha),
+                () => Invert(_red, newRed),
+                () => Invert(_green, newGreen),
+                () => Invert(_blue, newBlue));
+
+            Parallel.For(0, dest.Length, _pOptions, i =>
+            {
+                
+                if (newRed[i] > 255) newRed[i] = 255;
+                if (newGreen[i] > 255) newGreen[i] = 255;
+                if (newBlue[i] > 255) newBlue[i] = 255;
+
+                
+                if (newRed[i] < 0) newRed[i] = 0;
+                if (newGreen[i] < 0) newGreen[i] = 0;
+                if (newBlue[i] < 0) newBlue[i] = 0;
+
+                dest[i] = (int)((uint)(_alpha[i] << 24) | (uint)(newRed[i] << 16) | (uint)(newGreen[i] << 8) | (uint)newBlue[i]);
+            });
+
+            var image = new Bitmap(_width, _height);
+            var rct = new Rectangle(0, 0, image.Width, image.Height);
+            var bits2 = image.LockBits(rct, ImageLockMode.ReadWrite, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+            Marshal.Copy(dest, 0, bits2.Scan0, dest.Length);
+            image.UnlockBits(bits2);
+            return image;
+        }
+        internal void Invert(int[] a, int[] b)
+        {
+            int v = 0xff;
+            for (int i = 0; i < a.Length; i++)
+            {
+                b[i] = v - a[i];
+            }
         }
     }
 
