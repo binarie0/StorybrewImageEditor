@@ -193,6 +193,8 @@ namespace StorybrewImageLib
             #region Check For Existence
             //now that null check is done, no matter what the image should be generated at that path
             Path = newPath + (codec == PngEncoder ? ".png" : ".jpg");
+            //the reason I have to check anyways is because a custom export can be chosen
+
             //if FQPN exists with that exact code, then image has already been generated
 
             //checks existence 
@@ -709,6 +711,19 @@ namespace StorybrewImageLib
         /// </summary>
         public static String MapsetPath = StoryboardObjectGenerator.Current.MapsetPath;
 
+        public static void SetReadOnly(string fullpath, bool io)
+        {
+            if (fullpath == null) throw new Exception();
+
+            try
+            {
+                FileInfo info = new FileInfo(fullpath);
+                info.IsReadOnly = io;
+            } catch
+            {
+                throw new Exception();
+            }
+        }
     }
 
 }

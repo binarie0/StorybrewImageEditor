@@ -1,15 +1,8 @@
 ﻿using OpenTK;
 using OpenTK.Graphics;
-using OpenTK.Graphics.ES20;
 using StorybrewCommon.Storyboarding;
 using StorybrewCommon.Storyboarding.CommandValues;
 using System;
-using System.CodeDom;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace StorybrewImageLib
 {

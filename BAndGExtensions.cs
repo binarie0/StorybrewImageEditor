@@ -51,6 +51,7 @@ namespace StorybrewImageLib
             return (Layer.CreateSprite(spr.Path, OsbOrigin.Centre, CENTER));
 
         }
+        
 
         #region Noise
         public static OsbAnimation CreateNoise(this StoryboardLayer layer,
