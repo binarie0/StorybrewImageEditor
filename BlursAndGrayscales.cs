@@ -198,15 +198,13 @@ namespace StorybrewImageLib
             //if FQPN exists with that exact code, then image has already been generated
 
             //checks existence 
-            //DEBUG :
-            //checker still needs documentation
             if (ExistenceOfGeneration()) return;
             #endregion
             //set new bitmap
             Bitmap newbitmap = new Bitmap(this.Bitmap.Width, this.Bitmap.Height),
-                transfer, invtransfer;
+                transfer = null, invtransfer = null;
 
-            //graphics object can be used twice 
+            //graphics only used for grayscale stuff
             Graphics graphics = null;
             bool flag = false;
             //possible variables
@@ -229,11 +227,11 @@ namespace StorybrewImageLib
                 //create and instantiate color matrix
                 colors = new float[][]
                 {
-                    new float[] {r,r,r,0,0},
-                    new float[] {g,g,g,0,0},
+                    new float[] {r,r,r,0,0},        //idek whats going on here
+                    new float[] {g,g,g,0,0},        //but apparently this works
                     new float[] {b,b,b,0,0},
                     new float[] {0,0,0,a,0},
-                    new float[] {0,0,0,0,w}
+                    new float[] {0,0,0,0,w}         //dummy element
                 };
 
                 //initialize matrix
@@ -276,11 +274,17 @@ namespace StorybrewImageLib
 
             }
 
+            //save images
+            string full = System.IO.Path.Combine(ImageEditor.MapsetPath, Path).Replace('/', '\\');
+            newbitmap.Save(full, codec, null);
 
 
-            newbitmap.Save(System.IO.Path.Combine(ImageEditor.MapsetPath, Path).Replace('/', '\\')
-                            , codec, null);
+            //dispose of bitmaps
+            newbitmap.Dispose();
+            if (transfer != null) transfer.Dispose();
+            if (invtransfer != null) invtransfer.Dispose();
 
+            ImageEditor.SetReadOnly(full, true);
 
             //graphics.Dispose(); apparently it's already disposed??
             return;

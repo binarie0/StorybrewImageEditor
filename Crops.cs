@@ -33,6 +33,57 @@ namespace StorybrewImageLib
         {
             return (layer.CreateCropSprite(path, OsbOrigin.Centre, CENTER, TopLeft, BottomRight));
         }
+        public static OsbSprite GenerateSpriteCrop(this StoryboardLayer Layer,
+                                        string Base_Path,
+                                        OsbOrigin Origin,
+                                        Vector2 position,
+                                        Vector2 TopLeft, Vector2 BottomRight,
+                                        BlurEffect Blur = null,
+                                        GrayscaleEffect Grayscale = null,
+                                        bool Inverse = false
+                                        )
+        {
+            //creates both the edited sprite and the crop sprite
+
+            //if one wants to reference the other sprite they can just generate another sprite and it'll
+            //automatically pick that
+            EditedOsbSprite spr = EditedOsbSprite.NewSprite(Base_Path, Blur, Grayscale, Inverse);
+            spr.Export();
+
+            Rectangle rect = new Rectangle((int)TopLeft.X, (int)TopLeft.Y,
+                                            (int)(BottomRight.X - TopLeft.X),
+                                            (int)(BottomRight.Y - TopLeft.Y));
+
+            CropSprite crop = new CropSprite(spr.Path, rect);
+
+            return (Layer.CreateSprite(crop.Path, Origin, position));
+        }
+        public static OsbSprite GenerateSpriteCrop(this StoryboardLayer Layer,
+                                        string Base_Path,
+                                        OsbOrigin Origin,
+                                        
+                                        Vector2 TopLeft, Vector2 BottomRight,
+                                        BlurEffect Blur = null,
+                                        GrayscaleEffect Grayscale = null,
+                                        bool Inverse = false
+                                        )
+        {
+            return (Layer.GenerateSpriteCrop(Base_Path, Origin, CENTER,
+                TopLeft, BottomRight, Blur, Grayscale, Inverse));
+        }
+        public static OsbSprite GenerateSpriteCrop(this StoryboardLayer Layer,
+                                        string Base_Path,
+                                        
+
+                                        Vector2 TopLeft, Vector2 BottomRight,
+                                        BlurEffect Blur = null,
+                                        GrayscaleEffect Grayscale = null,
+                                        bool Inverse = false
+                                        )
+        {
+            return (Layer.GenerateSpriteCrop(Base_Path, OsbOrigin.Centre, CENTER,
+                TopLeft, BottomRight, Blur, Grayscale, Inverse));
+        }
     }
     public class CropSprite
     {
@@ -51,35 +102,44 @@ namespace StorybrewImageLib
             height = bounds.Height;
 
             SetFileExports();
-            if (File.Exists(ExportPath)) return;
+            if (File.Exists(ExportPath)) return; //no need to generate twice
 
-            Crop();
+            Crop(); 
         }
         private void Crop()
         {
+            //make image available to read
             ImageEditor.SetReadOnly(FullBasePath, false);
             Bitmap b = new Bitmap(FullBasePath);
             Bitmap nb = new Bitmap(width, height);
-            nb.SetResolution(96, 95);
+            nb.SetResolution(96, 96);
+
+            //auto dispose
             using (Graphics g = Graphics.FromImage(nb))
             {
+                //draw image again
                 g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
 
                 g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBilinear;
                 g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
 
+                //bounds are negative bc stackoverflow told me to
                 g.DrawImage(b, -bounds.X, -bounds.Y);
 
                 
             }
 
 
+            //save
             nb.Save(ExportPath);
 
+            //dispose extra bitmaps
             b.Dispose();
             nb.Dispose();
 
+            //reset read avail
             ImageEditor.SetReadOnly(FullBasePath, true);
+            ImageEditor.SetReadOnly(ExportPath, true);
         }
         
         private void SetFileExports()
@@ -93,6 +153,7 @@ namespace StorybrewImageLib
             FullBasePath = System.IO.Path.Combine(ImageEditor.MapsetPath, BasePath);
             ExportPath = System.IO.Path.Combine(ImageEditor.MapsetPath, Path)
                                 .Replace('/', '\\');
+
 
         }
     }
