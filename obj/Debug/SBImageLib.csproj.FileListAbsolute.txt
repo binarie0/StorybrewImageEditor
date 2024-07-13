@@ -1,0 +1,16 @@
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\obj\Debug\SBImageLib.csproj.AssemblyReference.cache
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\obj\Debug\SBImageLib.csproj.CoreCompileInputs.cache
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\SBImageLib.dll
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\SBImageLib.pdb
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\OpenTK.dll
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\StorybrewCommon.dll
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\Tiny.dll
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\System.ValueTuple.dll
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\BrewLib.dll
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\ManagedBass.dll
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\ManagedBass.Fx.dll
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\StorybrewCommon.pdb
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\bin\Debug\BrewLib.pdb
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\obj\Debug\SBImageLib.csproj.Up2Date
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\obj\Debug\SBImageLib.dll
+F:\OtherProjects\StorybrewImageExtension\SBImageLib\obj\Debug\SBImageLib.pdb
