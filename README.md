@@ -6,7 +6,7 @@
  and click "Settings" -> "Referenced Assemblies" -> "Add Assembly File"    
  Then, navigate to where you download SBImageLib.dll and select it.    
 
- You will also need to copy StorybrewImageEditor.dll and paste it inside of   
+ You will also need to copy SBImageLib.dll and paste it inside of   
  the Storybrew root directory (at least, that's what I had to do).   
 
  This was used to make all of my storyboards from June 2024 onward.
