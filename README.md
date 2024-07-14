@@ -1,17 +1,16 @@
 # StorybrewImageEditor
- Edit images and generate noise for Storybrew storyboards!
+ Edit images, generate noise, create sprite groups, and more soon for Storybrew storyboards!
 
 ## How to set up
  To set up StorybrewImageEditor, you must go into your project inside Storybrew   
  and click "Settings" -> "Referenced Assemblies" -> "Add Assembly File"    
- Then, navigate to where you download StorybrewImageEditor.dll and select it.    
+ Then, navigate to where you download SBImageLib.dll and select it.    
 
  You will also need to copy StorybrewImageEditor.dll and paste it inside of   
  the Storybrew root directory (at least, that's what I had to do).   
 
- If you want to see the example in action, you'll need to copy it from
- your download location and into your project. Then, you'll need to add it    
- as an effect.
+ This was used to make all of my storyboards from June 2024 onward.
+ 
 ### Credits
  I did code compilation and making it work inside Storybrew.  
     
