@@ -1,6 +1,6 @@
 # StorybrewImageEditor
  Edit images, generate noise, create sprite groups, and more soon for Storybrew storyboards!
-
+ This branch is for .NET 4.8. The master branch is dedicated to .NET 8.0
 ## How to set up
  To set up StorybrewImageEditor, you must go into your project inside Storybrew   
  and click "Settings" -> "Referenced Assemblies" -> "Add Assembly File"    
