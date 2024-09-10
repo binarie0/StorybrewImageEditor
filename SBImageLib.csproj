@@ -12,10 +12,10 @@
 
   <ItemGroup>
     <Reference Include="OpenTK">
-      <HintPath>D:\storybrew.1.91\OpenTK.dll</HintPath>
+      <HintPath>D:\storybrew\OpenTK.dll</HintPath>
     </Reference>
     <Reference Include="StorybrewCommon">
-      <HintPath>D:\storybrew.1.92\StorybrewCommon.dll</HintPath>
+      <HintPath>D:\storybrew\StorybrewCommon.dll</HintPath>
     </Reference>
   </ItemGroup>
 
